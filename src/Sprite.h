@@ -3,10 +3,11 @@
 
 #include <stdint.h>
 
-template<int numSprites>
+template<int numPixels>
 class Sprite {
 public:
-    Sprite(const uint32_t (*imageBank)[numSprites], int width, int height, int x = 0, int y = 0, int scale = 1){
+    // function definitions in here bc of cringe templates
+    Sprite(const uint32_t (*imageBank)[numPixels], int width, int height, int x = 0, int y = 0, int scale = 1){
         this->imageBank = imageBank;
         this->width = width;
         this->height = height;
@@ -29,7 +30,7 @@ public:
     int scale{};
 
 private:
-    const uint32_t (*imageBank)[numSprites];
+    const uint32_t (*imageBank)[numPixels];
     int width{};
     int height{};
     int frame{};

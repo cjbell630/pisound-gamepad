@@ -9,8 +9,9 @@ class GamepadScreen {
 public:
     GamepadScreen(int width, int height);
 
-    template<int numSprites>
-    void draw(Sprite<numSprites> sprite) {
+    // function definitions in here bc of cringe templates
+    template<int numPixels>
+    void draw(Sprite<numPixels> sprite) {
         int pixelOffset = screenIndex(sprite.x, sprite.y);
 
         for (int yI = 0; yI < 32; yI++) {
@@ -33,9 +34,9 @@ public:
         }
     }
 
-    void drawLine(int x0, int y0, int x1, int y1, float width, uint32_t color);
+    void drawLine(int x0, int y0, int x1, int y1, float thickness, uint32_t color);
 
-    void circle2(int xc, int yc, int thickness, int radius, const drc::byte *colorBytes);
+    void drawCircle(int xc, int yc, int radius, int thickness, uint32_t color);
 
     std::vector<drc::byte> *getPixels();
 

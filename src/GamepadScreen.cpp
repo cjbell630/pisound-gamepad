@@ -22,25 +22,34 @@ GamepadScreen::GamepadScreen(int width, int height) {
     pixels = new std::vector<drc::byte>(width * height * 4, 1);
 }
 
+// based on http://members.chello.at/~easyfilter/bresenham.html
 void GamepadScreen::horLine(int x1, int x2, int y, const drc::byte *colorBytes) {
     while (x1 <= x2) {
         setPixel(screenIndex(x1++, y), colorBytes);
     }
 }
 
+// based on http://members.chello.at/~easyfilter/bresenham.html
 void GamepadScreen::verLine(int x, int y1, int y2, const drc::byte *colorBytes) {
     while (y1 <= y2) {
         setPixel(screenIndex(x, y1++), colorBytes);
     }
 }
 
-void GamepadScreen::circle2(int xc, int yc, int thickness, int radius, const drc::byte *colorBytes) {
+// based on http://members.chello.at/~easyfilter/bresenham.html
+void GamepadScreen::drawCircle(int xc, int yc, int radius, int thickness, uint32_t color) {
     int inner = radius - thickness + 1;
     int xo = radius;
     int xi = inner;
     int y = 0;
     int erro = 1 - xo;
     int erri = 1 - xi;
+
+    drc::byte colorBytes[4];
+    for (unsigned char &colorByte: colorBytes) {
+        colorByte = color & 0xFF;
+        color = color >> 8;
+    }
 
     while (xo >= y) {
         horLine(xc + xi, xc + xo, yc + y, colorBytes);
@@ -77,7 +86,7 @@ void GamepadScreen::circle2(int xc, int yc, int thickness, int radius, const drc
 /*
  * based on http://members.chello.at/~easyfilter/bresenham.html
  */
-void GamepadScreen::drawLine(int x0, int y0, int x1, int y1, float width, uint32_t color) {
+void GamepadScreen::drawLine(int x0, int y0, int x1, int y1, float thickness, uint32_t color) {
     int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
     int dy = abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
     int err = dx - dy, e2, x2, y2;                          /* error value e_xy */
@@ -90,12 +99,12 @@ void GamepadScreen::drawLine(int x0, int y0, int x1, int y1, float width, uint32
     }
 
 
-    for (width = (width + 1) / 2;;) {
+    for (thickness = (thickness + 1) / 2;;) {
         setPixel(screenIndex(x0, y0), colorBytes);
         e2 = err;
         x2 = x0;
         if (2 * e2 >= -dx) {
-            for (e2 += dy, y2 = y0; e2 < ed * width && (y1 != y2 || dx > dy); e2 += dx) {
+            for (e2 += dy, y2 = y0; e2 < ed * thickness && (y1 != y2 || dx > dy); e2 += dx) {
                 setPixel(screenIndex(x0, y2 += sy), colorBytes);
             }
             if (x0 == x1) {
@@ -106,7 +115,7 @@ void GamepadScreen::drawLine(int x0, int y0, int x1, int y1, float width, uint32
             x0 += sx;
         }
         if (2 * e2 <= dy) {
-            for (e2 = dx - e2; e2 < ed * width && (x1 != x2 || dx < dy); e2 += dy) {
+            for (e2 = dx - e2; e2 < ed * thickness && (x1 != x2 || dx < dy); e2 += dy) {
                 setPixel(screenIndex(x2 += sx, y0), colorBytes);
             }
             if (y0 == y1) {
