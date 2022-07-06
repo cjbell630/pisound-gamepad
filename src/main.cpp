@@ -10,8 +10,10 @@
 #include "drc/input.h"
 
 #include "okayu.c"
+#include "okayu.h"
 #include "GamepadScreen.h"
 #include "GamepadInput.h"
+#include "CharacterControl.h"
 
 
 using namespace std;
@@ -26,8 +28,14 @@ int main(int, char **) {
     int pixel_offset = (480 * 854 / 2) + 480 / 2;
     int scale = 10;
 
+    uint32_t **okayu_pp_data;
+    okayu_pp_data = new uint32_t *[32 * 32];
+    for (int i = 0; i < 32 * 32; i++) {
+        okayu_pp_data[i] = const_cast<uint32_t *>(okayu_data[i]);
+    }
 
-    Sprite<32 * 32> okayu(okayu_data, 32, 32, 0, 0, 10);
+
+    Sprite okayu(okayu_pp_data, 32, 32, 0, 0, 5);
 
     cout << "making okayu\n";
 
@@ -45,31 +53,32 @@ int main(int, char **) {
 
     auto input = new GamepadInput(streamer);
 
+    auto characterControl = new CharacterControl(&okayu, input);
+
     // main loop
     bool running = true;
+    int frameNum = 0;
     while (running) {
         // int random_pixel = (rand() % (854 * 480)) * 4;{
         int random_pixel = -1;
+        /*
         vector<drc::byte> pixels_to_send(854 * 480 * 4, 1);
         for (int i = 0; i < 854 * 480 * 4; i++) {
             pixels_to_send[i] = screen.getPixels()->at(i);
+        }*/
+        input->updateStates();
+        if (frameNum % 2 == 0) {
+            characterControl->updatePosition();
         }
 
-        input->updateStates();
-        switch (input->getState(drc::InputData::ButtonMask::kBtnA)) {
-            case GamepadInput::ButtonState::DOWN:
-                cout << "A down\n";
-                break;
-            case GamepadInput::ButtonState::UP:
-                cout << "A up\n";
-                break;
-            default:
-                break;
-        }
+        screen.wipe();
+        screen.draw(okayu);
 
         //cout << "Pixels: " << pixels.size() << ", random_pixel: " << random_pixel << "\n";
-        streamer->PushVidFrame(&pixels_to_send, 854, 480, drc::PixelFormat::kRGBA, drc::Streamer::FlippingMode::NoFlip,
+        streamer->PushVidFrame(screen.getPixels(), 854, 480, drc::PixelFormat::kRGBA,
+                               drc::Streamer::FlippingMode::NoFlip,
                                drc::Streamer::StretchMode::NoStretch);
+        frameNum = (frameNum + 1) % 2;
     }
 
 

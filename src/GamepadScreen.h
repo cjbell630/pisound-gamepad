@@ -1,7 +1,6 @@
 #ifndef PISOUND_GAMEPAD_GAMEPADSCREEN_H
 #define PISOUND_GAMEPAD_GAMEPADSCREEN_H
 
-
 #include <drc/types.h>
 #include "Sprite.h"
 
@@ -9,30 +8,7 @@ class GamepadScreen {
 public:
     GamepadScreen(int width, int height);
 
-    // function definitions in here bc of cringe templates
-    template<int numPixels>
-    void draw(Sprite<numPixels> sprite) {
-        int pixelOffset = screenIndex(sprite.x, sprite.y);
-
-        for (int yI = 0; yI < 32; yI++) {
-            for (int xI = 0; xI < 32; xI++) {
-                auto pixel_int = sprite.getImage()[32 * yI + xI];
-                drc::byte b;
-                for (int i = 0; i < 4; i++) {
-                    b = pixel_int & 0xff;
-                    for (int scaleY = 0; scaleY < sprite.scale; scaleY++) {
-                        for (int scaleX = 0; scaleX < sprite.scale; scaleX++) {
-                            pixels->at((xI * sprite.scale + scaleX) * 4 +
-                                       (screenWidth * 4 * (yI * sprite.scale + scaleY)) + i +
-                                       pixelOffset) = b;
-                        }
-                    }
-
-                    pixel_int = pixel_int >> 8;
-                }
-            }
-        }
-    }
+    void draw(Sprite sprite);
 
     void drawLine(int x0, int y0, int x1, int y1, float thickness, uint32_t color);
 
@@ -40,6 +16,7 @@ public:
 
     std::vector<drc::byte> *getPixels();
 
+    void wipe(uint32_t color = 0xFFFFFFFF);
 
 private:
     int screenWidth;

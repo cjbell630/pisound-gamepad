@@ -2,7 +2,6 @@
 #include "GamepadScreen.h"
 
 int GamepadScreen::screenIndex(int spriteIndex, int spriteWidth, int xOff, int yOff) const {
-
     return screenWidth * (yOff + floor(spriteIndex / spriteWidth)) + (spriteIndex % spriteWidth) + xOff;
 }
 
@@ -127,6 +126,36 @@ void GamepadScreen::drawLine(int x0, int y0, int x1, int y1, float thickness, ui
     }
 }
 
+
 std::vector<drc::byte> *GamepadScreen::getPixels() {
     return this->pixels;
 }
+
+void GamepadScreen::wipe(uint32_t color) {
+    // TODO actually use color
+    pixels = new std::vector<drc::byte>(854 * 480 * 4, 1);
+}
+
+void GamepadScreen::draw(Sprite sprite) {
+    int pixelOffset = screenIndex(sprite.x, sprite.y);
+
+    for (int yI = 0; yI < 32; yI++) {
+        for (int xI = 0; xI < 32; xI++) {
+            auto pixel_int = sprite.getImage()[32 * yI + xI];
+            drc::byte b;
+            for (int i = 0; i < 4; i++) {
+                b = pixel_int & 0xff;
+                for (int scaleY = 0; scaleY < sprite.scale; scaleY++) {
+                    for (int scaleX = 0; scaleX < sprite.scale; scaleX++) {
+                        pixels->at((xI * sprite.scale + scaleX) * 4 +
+                                   (screenWidth * 4 * (yI * sprite.scale + scaleY)) + i +
+                                   pixelOffset) = b;
+                    }
+                }
+
+                pixel_int = pixel_int >> 8;
+            }
+        }
+    }
+}
+

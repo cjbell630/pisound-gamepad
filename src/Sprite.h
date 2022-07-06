@@ -3,37 +3,40 @@
 
 #include <stdint.h>
 
-template<int numPixels>
 class Sprite {
 public:
     // function definitions in here bc of cringe templates
-    Sprite(const uint32_t (*imageBank)[numPixels], int width, int height, int x = 0, int y = 0, int scale = 1){
+    Sprite(uint32_t **imageBank, int width, int height, int x = 0, int y = 0, int scale = 1) {
         this->imageBank = imageBank;
         this->width = width;
         this->height = height;
-        this->frame = 0;
+        this->currFrame = 30;
         this->x = x;
         this->y = y;
         this->scale = scale;
     }
 
-    void setFrame(int frame){
-        this->frame = frame;
+    void setFrame(int frame) {
+        this->currFrame = frame;
     }
 
-    const uint32_t *getImage(){
-        return this->imageBank[this->frame];
+    int getFrame() const {
+        return currFrame;
     }
 
-    int x{};
-    int y{};
-    int scale{};
+    const uint32_t *getImage() {
+        return this->imageBank[this->currFrame];
+    }
+
+    int x{0};
+    int y{0};
+    int scale{1};
 
 private:
-    const uint32_t (*imageBank)[numPixels];
+    uint32_t **imageBank;
     int width{};
     int height{};
-    int frame{};
+    int currFrame{};
 };
 
 
