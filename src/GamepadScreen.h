@@ -14,6 +14,8 @@ public:
 
     void drawCircle(int xc, int yc, int radius, int thickness, uint32_t color);
 
+    void drawArc(int xc, int yc, int radius, int thickness, uint32_t color, int startX, int startY, int endX, int endY);
+
     std::vector<drc::byte> *getPixels();
 
     void wipe(uint32_t color = 0xFFFFFFFF);

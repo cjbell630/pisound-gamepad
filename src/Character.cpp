@@ -1,31 +1,9 @@
-#include "CharacterControl.h"
+#include "Character.h"
 #include "okayu.h"
 #include <iostream>
 
-std::map<GamepadInput::ButtonState, std::vector<drc::InputData::ButtonMask>> CharacterControl::invertDPad() {
+void Character::updatePosition() {
 
-    std::map<GamepadInput::ButtonState, std::vector<drc::InputData::ButtonMask>> inverted = {
-            {GamepadInput::ButtonState::DOWN,      {}},
-            {GamepadInput::ButtonState::UP,        {}},
-            {GamepadInput::ButtonState::HELD,      {}},
-            {GamepadInput::ButtonState::UNTOUCHED, {}}
-    };
-    for (auto &i: {drc::InputData::ButtonMask::kBtnUp, drc::InputData::ButtonMask::kBtnDown,
-                   drc::InputData::ButtonMask::kBtnLeft, drc::InputData::ButtonMask::kBtnRight}) {
-        inverted[gamepadInput->getState(i)].push_back(i);
-    }
-    return inverted;
-}
-
-CharacterControl::CharacterControl(Sprite *sprite, GamepadInput *gamepadInput) {
-    this->sprite = sprite;
-    this->gamepadInput = gamepadInput;
-    this->movementState = MovementState::IDLE;
-    this->direction = {drc::InputData::ButtonMask::kBtnDown, drc::InputData::ButtonMask::kBtnDown};
-    this->movementSpeed = 2 * sprite->scale;
-}
-
-void CharacterControl::updatePosition() {
     //std::cout << "updatePosition" << std::endl;
 
     auto invertedInputs = invertDPad();
@@ -95,53 +73,64 @@ void CharacterControl::updatePosition() {
                 // if continue walking
                 // move to next frame
                 // TODO change macros to something more generic
-                if (sprite->getFrame() == Okayu_walkStart(directionThingy) + Okayu_walkFrames - 1) {
-                    sprite->setFrame(Okayu_walkStart(directionThingy));
+                if (getFrame() == Okayu_walkStart(directionThingy) + Okayu_walkFrames - 1) {
+                    setFrame(Okayu_walkStart(directionThingy));
                 } else {
-                    sprite->setFrame(sprite->getFrame() + 1);
+                    setFrame(getFrame() + 1);
                 }
             } else {
                 // set to init walking frame
-                std::cout << "setting frame to walk start (frame " << Okayu_walkStart(directionThingy)
-                          << ") bc new direction" << std::endl;
-                sprite->setFrame(Okayu_walkStart(directionThingy));
+                setFrame(Okayu_walkStart(directionThingy));
             }
             break;
         case IDLE:
             // if idle
             if (newDirection.first != direction.first || movementState != IDLE) {
                 // update sprite to face new direction / start idling
-                sprite->setFrame(Okayu_idleStart(directionThingy));
+                setFrame(Okayu_idleStart(directionThingy));
             }
             break;
 
     }
 
     // TODO inefficient, should only set this if dir changed and facing right
-    sprite->hFlip = newDirection.first == drc::InputData::kBtnRight;
+    hFlip = newDirection.first == drc::InputData::kBtnRight;
 
     movementState = newMovementState;
     direction = newDirection;
-
 }
 
-void CharacterControl::setMovementSpeed(int pixels) {
+void Character::setMovementSpeed(int pixels) {
     movementSpeed = pixels;
 }
 
-void CharacterControl::move(drc::InputData::ButtonMask direction) {
+std::map<GamepadInput::ButtonState, std::vector<drc::InputData::ButtonMask>> Character::invertDPad() {
+    std::map<GamepadInput::ButtonState, std::vector<drc::InputData::ButtonMask>> inverted = {
+            {GamepadInput::ButtonState::DOWN,      {}},
+            {GamepadInput::ButtonState::UP,        {}},
+            {GamepadInput::ButtonState::HELD,      {}},
+            {GamepadInput::ButtonState::UNTOUCHED, {}}
+    };
+    for (auto &i: {drc::InputData::ButtonMask::kBtnUp, drc::InputData::ButtonMask::kBtnDown,
+                   drc::InputData::ButtonMask::kBtnLeft, drc::InputData::ButtonMask::kBtnRight}) {
+        inverted[gamepadInput->getState(i)].push_back(i);
+    }
+    return inverted;
+}
+
+void Character::move(drc::InputData::ButtonMask direction) {
     switch (direction) {
         case drc::InputData::kBtnUp:
-            sprite->y -= movementSpeed;
+            y -= movementSpeed;
             break;
         case drc::InputData::kBtnDown:
-            sprite->y += movementSpeed;
+            y += movementSpeed;
             break;
         case drc::InputData::kBtnLeft:
-            sprite->x -= movementSpeed;
+            x -= movementSpeed;
             break;
         case drc::InputData::kBtnRight:
-            sprite->x += movementSpeed;
+            x += movementSpeed;
             break;
         default:
             break;

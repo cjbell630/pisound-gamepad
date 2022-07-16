@@ -13,14 +13,34 @@
 #include "okayu.h"
 #include "GamepadScreen.h"
 #include "GamepadInput.h"
-#include "CharacterControl.h"
+#include "Character.h"
 
 
 using namespace std;
 
+void drawRadialSelector(GamepadScreen *screen, int xc, int yc, int radius, int sectors, uint32_t color) {
+    double smallRadius = radius * 0.2;
+    //screen->drawArc(xc, yc, radius, 5, color, 0, 0, 0, 0);
+    screen->drawCircle(xc, yc, radius, 5, color);
+    screen->drawCircle(xc, yc, smallRadius, 5, color);
+
+    double halfRadPerSector = M_PI / sectors;
+    double radPerSector = 2 * halfRadPerSector;
+    // double angle = (M_PI / 2) + halfRadPerSector;
+    double angle = (M_PI / 2) + 0;
+    for (int i = 0; i < sectors; i++) {
+        double cosA = cos(angle);
+        double sinA = sin(angle);
+        int x = xc + radius * cosA;
+        int y = yc + radius * sinA;
+        int x2 = xc + smallRadius * cosA;
+        int y2 = yc + smallRadius * sinA;
+        screen->drawLine(x, y, x2, y2, 5, color);
+        angle += radPerSector;
+    }
+}
+
 int main(int, char **) {
-
-
     GamepadScreen screen(854, 480);
     auto *streamer = new drc::Streamer();
     streamer->Start();
@@ -35,7 +55,9 @@ int main(int, char **) {
     }
 
 
-    Sprite okayu(okayu_pp_data, 32, 32, 0, 0, 5);
+    auto input = new GamepadInput(streamer);
+
+    Character okayu(okayu_pp_data, 32, 32, input, 0, 0, 5);
 
     cout << "making okayu\n";
 
@@ -51,10 +73,6 @@ int main(int, char **) {
 
     cout << "done drawing line. drawing circle\n";
 
-    auto input = new GamepadInput(streamer);
-
-    auto characterControl = new CharacterControl(&okayu, input);
-
     // main loop
     bool running = true;
     int frameNum = 0;
@@ -68,11 +86,13 @@ int main(int, char **) {
         }*/
         input->updateStates();
         if (frameNum % 2 == 0) {
-            characterControl->updatePosition();
+            okayu.updatePosition();
         }
 
         screen.wipe();
         screen.draw(okayu);
+
+        drawRadialSelector(&screen, 854 / 2, 480 / 2, 200, 5, 0xFF0000FF);
 
         //cout << "Pixels: " << pixels.size() << ", random_pixel: " << random_pixel << "\n";
         streamer->PushVidFrame(screen.getPixels(), 854, 480, drc::PixelFormat::kRGBA,
