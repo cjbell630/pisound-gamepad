@@ -1,4 +1,9 @@
 #!/bin/bash
+if (( EUID == 0 )); then
+  echo "This script should not be run with sudo!!!"
+  exit
+fi
+
 screen -X -S gamepad-hostapd quit
 sudo pkill hostapd # likes to hang around sometimes for some reason
 screen -X -S gamepad-netboot quit
