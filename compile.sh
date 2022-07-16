@@ -1,4 +1,9 @@
 # TODO make into makefile
+if (( EUID != 0 )); then
+  echo "This script should be run with sudo!!!"
+  exit
+fi
+
 cd /home/ubuntu/2pc2drc/pisound-gamepad
 gcc -c -o src/okayu.o src/okayu.c
 g++ -g -c src/GamepadScreen.cpp -o src/GamepadScreen.o

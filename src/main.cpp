@@ -57,7 +57,9 @@ int main(int, char **) {
 
     auto input = new GamepadInput(streamer);
 
-    Character okayu(okayu_pp_data, 32, 32, input, 0, 0, 5);
+    Character okayu(okayu_pp_data, OKAYU_FRAME_WIDTH, OKAYU_FRAME_HEIGHT, input, 0, 0, 5);
+
+    okayu.frameDelay = 2;
 
     cout << "making okayu\n";
 
@@ -85,14 +87,12 @@ int main(int, char **) {
             pixels_to_send[i] = screen.getPixels()->at(i);
         }*/
         input->updateStates();
-        if (frameNum % 2 == 0) {
-            okayu.updatePosition();
-        }
+        okayu.updatePosition();
 
         screen.wipe();
         screen.draw(okayu);
 
-        drawRadialSelector(&screen, 854 / 2, 480 / 2, 200, 5, 0xFF0000FF);
+        // drawRadialSelector(&screen, 854 / 2, 480 / 2, 200, 5, 0xFF0000FF);
 
         //cout << "Pixels: " << pixels.size() << ", random_pixel: " << random_pixel << "\n";
         streamer->PushVidFrame(screen.getPixels(), 854, 480, drc::PixelFormat::kRGBA,

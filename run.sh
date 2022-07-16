@@ -13,6 +13,9 @@ sudo iw dev WiiUAP del
 
 sleep 3
 
+# set region (changes after reboot sometimes idk)
+sudo iw reg set US
+
 # create WiiU AP
 sudo iw dev wlan0 interface add wlWiiUAP type managed
 sudo ip link set wlWiiUAP name WiiUAP
@@ -24,7 +27,7 @@ cd /home/ubuntu/2pc2drc/drc-hostap/wpa_supplicant
 screen -dm -S gamepad-wpasupp sudo ./wpa_supplicant -Dnl80211 -i wlan0 -c ../conf/wpa_supplicant_normal.conf
 sleep 1
 
-# set routing TODO change to WiiUAP
+# set routing
 sudo ip a a 192.168.1.10/24 dev WiiUAP
 sudo ip l set mtu 1800 dev WiiUAP
 

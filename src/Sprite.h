@@ -18,6 +18,18 @@ public:
 
     void setFrame(int frame) {
         this->currFrame = frame;
+        untilMove = frameDelay;
+    }
+
+    bool advFrame() {
+        if(untilMove==0){
+            this->currFrame++;
+            untilMove = frameDelay;
+            return true;
+        }else{
+            untilMove--;
+            return false;
+        }
     }
 
     int getFrame() const {
@@ -35,10 +47,12 @@ public:
     bool vFlip{false};
     int width{};
     int height{};
+    int frameDelay{2}; //TODO doc + getter + setter
 
 private:
     uint32_t **imageBank;
     int currFrame{};
+    int untilMove{0};
 };
 
 

@@ -18,13 +18,14 @@ public:
     void updatePosition();
 
     enum MovementState {
-        IDLE, FIDGET, WALKING, STRAFING, ROLLING
+        IDLE, FIDGET, WALKING, STRAFING, ROLLING, LIFTING, DROPPING
     };
 
     void setMovementSpeed(int pixels);
 
-private:
+    void pickUp(Sprite *sprite);
 
+private:
     GamepadInput *gamepadInput;
     std::pair<drc::InputData::ButtonMask, drc::InputData::ButtonMask> direction;
     MovementState movementState;
@@ -32,6 +33,9 @@ private:
     std::map<GamepadInput::ButtonState, std::vector<drc::InputData::ButtonMask>> invertDPad();
 
     int movementSpeed;
+    bool canMove{true};
+    bool canTurn{true};
+    bool holding{false};
 
     void move(drc::InputData::ButtonMask direction);
     // TODO list of collision objects
