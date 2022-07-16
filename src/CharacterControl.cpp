@@ -76,7 +76,7 @@ void CharacterControl::updatePosition() {
 
     //TODO this is cringe
     int directionThingy =
-            direction.first == drc::InputData::kBtnDown ? 0 : direction.first == drc::InputData::kBtnUp ? 2 : 1;
+            newDirection.first == drc::InputData::kBtnDown ? 0 : newDirection.first == drc::InputData::kBtnUp ? 2 : 1;
 
     //std::cout << "directionThingy: " << directionThingy << std::endl;
     //std::cout << "newDirection: " << newDirection.first << ", " << newDirection.second << std::endl;
@@ -102,6 +102,8 @@ void CharacterControl::updatePosition() {
                 }
             } else {
                 // set to init walking frame
+                std::cout << "setting frame to walk start (frame " << Okayu_walkStart(directionThingy)
+                          << ") bc new direction" << std::endl;
                 sprite->setFrame(Okayu_walkStart(directionThingy));
             }
             break;
@@ -115,7 +117,8 @@ void CharacterControl::updatePosition() {
 
     }
 
-    // TODO flip sprite if facing other direction
+    // TODO inefficient, should only set this if dir changed and facing right
+    sprite->hFlip = newDirection.first == drc::InputData::kBtnRight;
 
     movementState = newMovementState;
     direction = newDirection;

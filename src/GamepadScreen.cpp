@@ -139,16 +139,20 @@ void GamepadScreen::wipe(uint32_t color) {
 void GamepadScreen::draw(Sprite sprite) {
     int pixelOffset = screenIndex(sprite.x, sprite.y);
 
-    for (int yI = 0; yI < 32; yI++) {
-        for (int xI = 0; xI < 32; xI++) {
+    for (int yI = 0; yI < sprite.height; yI++) {
+        for (int xI = 0; xI < sprite.width; xI++) {
             auto pixel_int = sprite.getImage()[32 * yI + xI];
             drc::byte b;
+
+            int flippedX = sprite.hFlip ? sprite.width - xI - 1 : xI;
+            int flippedY = sprite.vFlip ? sprite.height - yI - 1 : yI;
+
             for (int i = 0; i < 4; i++) {
                 b = pixel_int & 0xff;
                 for (int scaleY = 0; scaleY < sprite.scale; scaleY++) {
                     for (int scaleX = 0; scaleX < sprite.scale; scaleX++) {
-                        pixels->at((xI * sprite.scale + scaleX) * 4 +
-                                   (screenWidth * 4 * (yI * sprite.scale + scaleY)) + i +
+                        pixels->at((flippedX * sprite.scale + scaleX) * 4 +
+                                   (screenWidth * 4 * (flippedY * sprite.scale + scaleY)) + i +
                                    pixelOffset) = b;
                     }
                 }

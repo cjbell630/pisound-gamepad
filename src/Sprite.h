@@ -31,11 +31,13 @@ public:
     int x{0};
     int y{0};
     int scale{1};
+    bool hFlip{false};
+    bool vFlip{false};
+    int width{};
+    int height{};
 
 private:
     uint32_t **imageBank;
-    int width{};
-    int height{};
     int currFrame{};
 };
 
