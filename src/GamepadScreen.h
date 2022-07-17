@@ -8,13 +8,13 @@ class GamepadScreen {
 public:
     GamepadScreen(int width, int height);
 
-    void draw(Sprite sprite);
+    void draw(Sprite *sprite);
 
     void drawLine(int x0, int y0, int x1, int y1, float thickness, uint32_t color);
 
     void drawCircle(int xc, int yc, int radius, int thickness, uint32_t color);
 
-    void drawArc(int xc, int yc, int radius, int thickness, uint32_t color, int startX, int startY, int endX, int endY);
+    //void drawArc(int xc, int yc, int radius, int thickness, uint32_t color, int startX, int startY, int endX, int endY);
 
     std::vector<drc::byte> *getPixels();
 

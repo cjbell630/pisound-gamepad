@@ -1,5 +1,6 @@
 #include <cmath>
 #include "GamepadScreen.h"
+#include <cstdarg>
 
 int GamepadScreen::screenIndex(int spriteIndex, int spriteWidth, int xOff, int yOff) const {
     return screenWidth * (yOff + floor(spriteIndex / spriteWidth)) + (spriteIndex % spriteWidth) + xOff;
@@ -215,28 +216,36 @@ void GamepadScreen::wipe(uint32_t color) {
     pixels = new std::vector<drc::byte>(854 * 480 * 4, 1);
 }
 
-void GamepadScreen::draw(Sprite sprite) {
-    int pixelOffset = screenIndex(sprite.x, sprite.y);
+void GamepadScreen::draw(Sprite *sprite) {
+    int pixelOffset = screenIndex(sprite->x, sprite->y);
 
-    for (int yI = 0; yI < sprite.height; yI++) {
-        for (int xI = 0; xI < sprite.width; xI++) {
-            auto pixel_int = sprite.getImage()[32 * yI + xI];
-            drc::byte b;
+    // TODO averaging
 
-            int flippedX = sprite.hFlip ? sprite.width - xI - 1 : xI;
-            int flippedY = sprite.vFlip ? sprite.height - yI - 1 : yI;
+    for (int yI = 0; yI < sprite->height; yI++) {
+        for (int xI = 0; xI < sprite->width; xI++) {
+            auto pixel_int = sprite->getImage()[32 * yI + xI];
+            //TODO
+            if (pixel_int & 0x000000FF) { // if alpha is not 0
+                drc::byte b;
 
-            for (int i = 0; i < 4; i++) {
-                b = pixel_int & 0xff;
-                for (int scaleY = 0; scaleY < sprite.scale; scaleY++) {
-                    for (int scaleX = 0; scaleX < sprite.scale; scaleX++) {
-                        pixels->at((flippedX * sprite.scale + scaleX) * 4 +
-                                   (screenWidth * 4 * (flippedY * sprite.scale + scaleY)) + i +
-                                   pixelOffset) = b;
+                int flippedX = sprite->hFlip ? sprite->width - xI - 1 : xI;
+                int flippedY = sprite->vFlip ? sprite->height - yI - 1 : yI;
+
+                for (int i = 0; i < 4; i++) {
+                    b = pixel_int & 0xff;
+                    for (int scaleY = 0; scaleY < sprite->scale; scaleY++) {
+                        for (int scaleX = 0; scaleX < sprite->scale; scaleX++) {
+                            int screenIndex = (flippedX * sprite->scale + scaleX) * 4 +
+                                              (screenWidth * 4 * (flippedY * sprite->scale + scaleY)) + i +
+                                              pixelOffset;
+                            if (0 <= screenIndex && screenIndex < pixels->size()) { // do not draw out of bounds
+                                pixels->at(screenIndex) = b;
+                            }
+                        }
                     }
-                }
 
-                pixel_int = pixel_int >> 8;
+                    pixel_int = pixel_int >> 8;
+                }
             }
         }
     }

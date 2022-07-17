@@ -10,17 +10,45 @@ void Character::updatePosition() {
         int lastFrame = (movementState == LIFTING ? Okayu_liftStart(prevDirectionThingy) + Okayu_liftFrames :
                          Okayu_dropStart(prevDirectionThingy) + Okayu_dropFrames) - 1;
         if (getFrame() == lastFrame) { // if on last anim frame
-            holding = !holding;
-            setFrame(Okayu_idleStart(prevDirectionThingy, holding));
+            heldSprite = movementState == DROPPING ? nullptr : heldSprite;
+            setFrame(Okayu_idleStart(prevDirectionThingy, heldSprite));
             movementState = IDLE;
         } else {
+            // TODO dropping needs to pick and store a targ pos, then move towards it
+            if (movementState == LIFTING) {
+                heldSprite->glideTowards(x + (width * scale - heldSprite->width * heldSprite->scale) / 2,
+                                         y - (heldSprite->height * heldSprite->scale) + (scale * 3 * height / 8),
+                                         lastFrame - getFrame());
+            } else {
+                int xOff, yOff;
+                switch (direction.first) {
+                    case drc::InputData::kBtnUp:
+                        xOff = (width * scale - heldSprite->width * heldSprite->scale) / 2;
+                        yOff = -height * scale * 3 / 16;
+                        break;
+                    case drc::InputData::kBtnDown:
+                        xOff = (width * scale - heldSprite->width * heldSprite->scale) / 2;
+                        yOff = height * scale * 7 / 8;
+                        break;
+                    case drc::InputData::kBtnLeft:
+                        xOff = -width * scale * 11 / 16;
+                        yOff = (height * scale) - (heldSprite->height * heldSprite->scale);
+                        break;
+                    case drc::InputData::kBtnRight:
+                        xOff = width * scale * 7 / 8;
+                        yOff = (height * scale) - (heldSprite->height * heldSprite->scale);
+                        break;
+                }
+                heldSprite->glideTowards(x + xOff, y + yOff, lastFrame - getFrame());
+            }
             advFrame();
         }
     } else if (gamepadInput->getState(drc::InputData::ButtonMask::kBtnA) == GamepadInput::ButtonState::DOWN) {
-        if (holding) {
+        if (heldSprite) { // if holding something
             movementState = DROPPING;
             setFrame(Okayu_dropStart(prevDirectionThingy));
-        } else {
+        } else if (!holdablesWithinRange->empty()) { // if not holding and there is an object that can be picked up
+            heldSprite = holdablesWithinRange->front(); // pick up first object
             movementState = LIFTING;
             setFrame(Okayu_liftStart(prevDirectionThingy));
         }
@@ -102,21 +130,21 @@ void Character::updatePosition() {
                     // if continue walking
                     // move to next frame
                     // TODO change macros to something more generic
-                    if (getFrame() == Okayu_walkStart(directionThingy, holding) + Okayu_walkFrames - 1) {
-                        setFrame(Okayu_walkStart(directionThingy, holding));
+                    if (getFrame() == Okayu_walkStart(directionThingy, heldSprite) + Okayu_walkFrames - 1) {
+                        setFrame(Okayu_walkStart(directionThingy, heldSprite));
                     } else {
                         advFrame();
                     }
                 } else {
                     // set to init walking frame
-                    setFrame(Okayu_walkStart(directionThingy, holding));
+                    setFrame(Okayu_walkStart(directionThingy, heldSprite));
                 }
                 break;
             case IDLE:
                 // if idle
                 if (newDirection.first != direction.first || movementState != IDLE) {
                     // update sprite to face new direction / start idling
-                    setFrame(Okayu_idleStart(directionThingy, holding));
+                    setFrame(Okayu_idleStart(directionThingy, heldSprite));
                 }
                 break;
         }
@@ -148,24 +176,50 @@ std::map<GamepadInput::ButtonState, std::vector<drc::InputData::ButtonMask>> Cha
 }
 
 void Character::move(drc::InputData::ButtonMask direction) {
+    //TODO add sine jiggle for held object
     switch (direction) {
         case drc::InputData::kBtnUp:
             y -= movementSpeed;
+            if (heldSprite) {
+                heldSprite->y -= movementSpeed;
+            }
             break;
         case drc::InputData::kBtnDown:
             y += movementSpeed;
+            if (heldSprite) {
+                heldSprite->y += movementSpeed;
+            }
             break;
         case drc::InputData::kBtnLeft:
             x -= movementSpeed;
+            if (heldSprite) {
+                heldSprite->x -= movementSpeed;
+            }
             break;
         case drc::InputData::kBtnRight:
             x += movementSpeed;
+            if (heldSprite) {
+                heldSprite->x += movementSpeed;
+            }
             break;
         default:
             break;
     }
 }
 
-void Character::pickUp(Sprite *sprite) {
-    movementState = LIFTING;
+void Character::setHoldables(std::vector<Sprite *> *holdables) {
+    this->holdablesWithinRange = holdables;
+}
+
+Character::Character(uint32_t **imageBank, int width, int height, GamepadInput *gamepadInput, int x, int y, int scale)
+        : Sprite(imageBank, width, height, x, y, scale) {
+    this->gamepadInput = gamepadInput;
+    this->movementState = MovementState::IDLE;
+    this->direction = {drc::InputData::ButtonMask::kBtnDown, drc::InputData::ButtonMask::kBtnDown};
+    this->movementSpeed = 2 * scale; //TODO
+    this->setFrame(Okayu_idleStart(0, heldSprite));
+}
+
+Sprite *Character::getHeldSprite() {
+    return heldSprite;
 }

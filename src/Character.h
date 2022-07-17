@@ -8,12 +8,7 @@
 class Character : public Sprite {
 public:
     Character(uint32_t **imageBank, int width, int height, GamepadInput *gamepadInput, int x = 0, int y = 0,
-              int scale = 1) : Sprite(imageBank, width, height, x, y, scale) {
-        this->gamepadInput = gamepadInput;
-        this->movementState = MovementState::IDLE;
-        this->direction = {drc::InputData::ButtonMask::kBtnDown, drc::InputData::ButtonMask::kBtnDown};
-        this->movementSpeed = 2 * scale; //TODO
-    }
+              int scale = 1);
 
     void updatePosition();
 
@@ -21,9 +16,11 @@ public:
         IDLE, FIDGET, WALKING, STRAFING, ROLLING, LIFTING, DROPPING
     };
 
+    void setHoldables(std::vector<Sprite *> *holdables);
+
     void setMovementSpeed(int pixels);
 
-    void pickUp(Sprite *sprite);
+    Sprite *getHeldSprite();
 
 private:
     GamepadInput *gamepadInput;
@@ -35,7 +32,8 @@ private:
     int movementSpeed;
     bool canMove{true};
     bool canTurn{true};
-    bool holding{false};
+    Sprite *heldSprite{nullptr};
+    std::vector<Sprite *> *holdablesWithinRange{nullptr};
 
     void move(drc::InputData::ButtonMask direction);
     // TODO list of collision objects

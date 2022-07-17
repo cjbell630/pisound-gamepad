@@ -10,7 +10,7 @@ public:
         this->imageBank = imageBank;
         this->width = width;
         this->height = height;
-        this->currFrame = 30;
+        this->currFrame = 0;
         this->x = x;
         this->y = y;
         this->scale = scale;
@@ -22,11 +22,11 @@ public:
     }
 
     bool advFrame() {
-        if(untilMove==0){
+        if (untilMove == 0) {
             this->currFrame++;
             untilMove = frameDelay;
             return true;
-        }else{
+        } else {
             untilMove--;
             return false;
         }
@@ -38,6 +38,11 @@ public:
 
     const uint32_t *getImage() {
         return this->imageBank[this->currFrame];
+    }
+
+    void glideTowards(int targX, int targY, int stepsLeft) {
+        this->x += (targX - this->x) / stepsLeft;
+        this->y += (targY - this->y) / stepsLeft;
     }
 
     int x{0};

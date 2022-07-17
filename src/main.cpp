@@ -10,6 +10,7 @@
 #include "drc/input.h"
 
 #include "okayu.c"
+#include "module.c"
 #include "okayu.h"
 #include "GamepadScreen.h"
 #include "GamepadInput.h"
@@ -49,21 +50,31 @@ int main(int, char **) {
     int scale = 10;
 
     uint32_t **okayu_pp_data;
-    okayu_pp_data = new uint32_t *[32 * 32];
-    for (int i = 0; i < 32 * 32; i++) {
+    okayu_pp_data = new uint32_t *[OKAYU_FRAME_WIDTH * OKAYU_FRAME_HEIGHT];
+    for (int i = 0; i < OKAYU_FRAME_COUNT; i++) {
         okayu_pp_data[i] = const_cast<uint32_t *>(okayu_data[i]);
+    }
+
+    uint32_t **module_pp_data;
+    module_pp_data = new uint32_t *[MODULE_FRAME_WIDTH * MODULE_FRAME_HEIGHT];
+    for (int i = 0; i < MODULE_FRAME_COUNT; i++) {
+        module_pp_data[i] = const_cast<uint32_t *>(module_data[i]);
     }
 
 
     auto input = new GamepadInput(streamer);
 
-    Character okayu(okayu_pp_data, OKAYU_FRAME_WIDTH, OKAYU_FRAME_HEIGHT, input, 0, 0, 5);
-
+    Character okayu(okayu_pp_data, OKAYU_FRAME_WIDTH, OKAYU_FRAME_HEIGHT, input, 0, 0, 3);
     okayu.frameDelay = 2;
+
+    Sprite module(module_pp_data, MODULE_FRAME_WIDTH, MODULE_FRAME_HEIGHT, 100, 100, 2);
+
+    vector<Sprite *> holdables = {&module};
+    okayu.setHoldables(&holdables);
 
     cout << "making okayu\n";
 
-    screen.draw(okayu);
+    screen.draw(&okayu);
 
     cout << "done making okayu. drawing line\n";
 
@@ -90,7 +101,13 @@ int main(int, char **) {
         okayu.updatePosition();
 
         screen.wipe();
-        screen.draw(okayu);
+        if (okayu.getHeldSprite()) {
+            screen.draw(&okayu);
+            screen.draw(okayu.getHeldSprite());
+        } else {
+            screen.draw(&module);
+            screen.draw(&okayu);
+        }
 
         // drawRadialSelector(&screen, 854 / 2, 480 / 2, 200, 5, 0xFF0000FF);
 
