@@ -9,13 +9,15 @@
 #include "drc/pixel-format.h"
 #include "drc/input.h"
 
-#include "okayu.c"
-#include "module.c"
-#include "jack.c"
-#include "okayu.h"
+#include "images/okayu.c"
+#include "images/module.c"
+#include "images/jack.c"
+#include "images/okayu.h"
+
+#include "sprite_types/Character.h"
+
 #include "GamepadScreen.h"
 #include "GamepadInput.h"
-#include "Character.h"
 
 
 using namespace std;

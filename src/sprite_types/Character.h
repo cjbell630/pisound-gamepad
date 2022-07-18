@@ -3,7 +3,7 @@
 
 
 #include "Sprite.h"
-#include "GamepadInput.h"
+#include "../GamepadInput.h"
 
 class Character : public Sprite {
 public:

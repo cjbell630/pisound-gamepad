@@ -1,5 +1,5 @@
 #include "Character.h"
-#include "okayu.h"
+#include "../images/okayu.h"
 #include <iostream>
 
 void Character::updatePosition() {

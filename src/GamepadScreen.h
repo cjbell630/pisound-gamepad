@@ -2,7 +2,7 @@
 #define PISOUND_GAMEPAD_GAMEPADSCREEN_H
 
 #include <drc/types.h>
-#include "Sprite.h"
+#include "sprite_types/Sprite.h"
 
 class GamepadScreen {
 public:

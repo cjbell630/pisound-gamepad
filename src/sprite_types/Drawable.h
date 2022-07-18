@@ -2,7 +2,7 @@
 #define PISOUND_GAMEPAD_DRAWABLE_H
 
 
-#include "GamepadScreen.h"
+#include "../GamepadScreen.h"
 
 class Drawable {
 public:
