@@ -90,7 +90,7 @@ int main(int, char **) {
 
     cout << "making okayu\n";
 
-    screen.draw(&okayu);
+    okayu.draw(&screen);
 
     cout << "done making okayu. drawing line\n";
 
@@ -119,12 +119,12 @@ int main(int, char **) {
         //TODO iterates through this like 3 times
         for (auto spritePair: holdables) {
             if (spritePair.first != okayu.getHeldSprite()) {
-                screen.draw(spritePair.first);
+                spritePair.first->draw(&screen);
             }
         }
-        screen.draw(&okayu);
+        okayu.draw(&screen);
         if (okayu.getHeldSprite()) {
-            screen.draw(okayu.getHeldSprite());
+            okayu.getHeldSprite()->draw(&screen);
         }
 
         // drawRadialSelector(&screen, 854 / 2, 480 / 2, 200, 5, 0xFF0000FF);

@@ -18,28 +18,33 @@ void Character::updatePosition() {
             if (movementState == LIFTING) {
                 heldSprite->glideTowards(x + gripX * scale - heldSprite->gripX * heldSprite->scale,
                                          y + gripY * scale - heldSprite->gripY * heldSprite->scale,
-                                         lastFrame - getFrame());
+                                         (lastFrame - getFrame()) * frameDelay);
             } else {
                 int xOff, yOff;
                 switch (direction.first) {
                     case drc::InputData::kBtnUp:
-                        xOff = (width * scale - heldSprite->width * heldSprite->scale) / 2;
-                        yOff = -height * scale * 3 / 16;
+                        //xOff = (width * scale - heldSprite->width * heldSprite->scale) / 2;
+                        xOff = gripX * scale;
+                        yOff = height * scale / 2;
                         break;
                     case drc::InputData::kBtnDown:
-                        xOff = (width * scale - heldSprite->width * heldSprite->scale) / 2;
-                        yOff = height * scale * 7 / 8;
+                        //xOff = (width * scale - heldSprite->width * heldSprite->scale) / 2;
+                        xOff = gripX * scale;
+                        //yOff = height * scale * 7 / 8;
+                        yOff = height * scale + heldSprite->gripY * heldSprite->scale;
                         break;
                     case drc::InputData::kBtnLeft:
-                        xOff = -width * scale * 11 / 16;
-                        yOff = (height * scale) - (heldSprite->height * heldSprite->scale);
+                        xOff = -width * scale * 2 / 8;
+                        yOff = (height * scale);
                         break;
                     case drc::InputData::kBtnRight:
-                        xOff = width * scale * 7 / 8;
-                        yOff = (height * scale) - (heldSprite->height * heldSprite->scale);
+                        xOff = width * scale + heldSprite->gripX * heldSprite->scale;
+                        yOff = (height * scale);
                         break;
                 }
-                heldSprite->glideTowards(x + xOff, y + yOff, lastFrame - getFrame());
+                heldSprite->glideTowards(x + xOff - heldSprite->gripX * heldSprite->scale,
+                                         y + yOff - heldSprite->gripY * heldSprite->scale,
+                                         (lastFrame - getFrame()) * frameDelay);
             }
             advFrame();
         }

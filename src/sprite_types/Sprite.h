@@ -3,8 +3,9 @@
 
 #include <stdint.h>
 #include <cmath>
+#include "Drawable.h"
 
-class Sprite {
+class Sprite : public Drawable {
 public:
     // function definitions in here bc of cringe templates
     Sprite(uint32_t **imageBank, int width, int height, int x = 0, int y = 0, int scale = 1) {
@@ -53,6 +54,42 @@ public:
 
     int distForComp(Sprite *otherSprite) {
         return pow(x - otherSprite->x, 2) + pow(y - otherSprite->y, 2);
+    }
+
+    void draw(GamepadScreen *screen) override {
+        int pixelOffset = screen->screenIndex(x, y);
+
+        // TODO averaging
+
+        for (int yI = 0; yI < height; yI++) {
+            for (int xI = 0; xI < width; xI++) {
+                auto pixel_int = getImage()[32 * yI + xI];
+                //TODO
+                if (pixel_int & 0x000000FF) { // if alpha is not 0
+                    drc::byte b;
+
+                    int flippedX = hFlip ? width - xI - 1 : xI;
+                    int flippedY = vFlip ? height - yI - 1 : yI;
+
+                    for (int i = 0; i < 4; i++) {
+                        b = pixel_int & 0xff;
+                        for (int scaleY = 0; scaleY < scale; scaleY++) {
+                            for (int scaleX = 0; scaleX < scale; scaleX++) {
+                                int screenIndex = (flippedX * scale + scaleX) * 4 +
+                                                  (screen->screenWidth * 4 * (flippedY * scale + scaleY)) + i +
+                                                  pixelOffset;
+                                if (0 <= screenIndex &&
+                                    screenIndex < screen->pixelArraySize()) { // do not draw out of bounds
+                                    screen->setPixelByte(screenIndex, b);
+                                }
+                            }
+                        }
+
+                        pixel_int = pixel_int >> 8;
+                    }
+                }
+            }
+        }
     }
 
     int x{0};
