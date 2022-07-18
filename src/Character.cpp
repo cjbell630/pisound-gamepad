@@ -16,8 +16,8 @@ void Character::updatePosition() {
         } else {
             // TODO dropping needs to pick and store a targ pos, then move towards it
             if (movementState == LIFTING) {
-                heldSprite->glideTowards(x + (width * scale - heldSprite->width * heldSprite->scale) / 2,
-                                         y - (heldSprite->height * heldSprite->scale) + (scale * 3 * height / 8),
+                heldSprite->glideTowards(x + gripX * scale - heldSprite->gripX * heldSprite->scale,
+                                         y + gripY * scale - heldSprite->gripY * heldSprite->scale,
                                          lastFrame - getFrame());
             } else {
                 int xOff, yOff;
@@ -48,7 +48,7 @@ void Character::updatePosition() {
             movementState = DROPPING;
             setFrame(Okayu_dropStart(prevDirectionThingy));
         } else if (!holdablesWithinRange->empty()) { // if not holding and there is an object that can be picked up
-            heldSprite = holdablesWithinRange->front(); // pick up first object
+            heldSprite = holdablesWithinRange->front().first; // pick up first object
             movementState = LIFTING;
             setFrame(Okayu_liftStart(prevDirectionThingy));
         }
@@ -207,7 +207,7 @@ void Character::move(drc::InputData::ButtonMask direction) {
     }
 }
 
-void Character::setHoldables(std::vector<Sprite *> *holdables) {
+void Character::setHoldables(std::vector<std::pair<Sprite *, int>> *holdables) {
     this->holdablesWithinRange = holdables;
 }
 

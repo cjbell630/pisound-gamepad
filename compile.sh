@@ -8,6 +8,7 @@ cd /home/ubuntu/2pc2drc/pisound-gamepad
 rm -rf src/*.o
 gcc -c -o src/okayu.o src/okayu.c
 gcc -c -o src/module.o src/module.c
+gcc -c -o src/jack.o src/jack.c
 g++ -g -c src/GamepadScreen.cpp -o src/GamepadScreen.o
 g++ -g -c src/GamepadInput.cpp -o src/GamepadInput.o -l drc
 g++ -g -c src/Character.cpp -o src/Character.o -l drc

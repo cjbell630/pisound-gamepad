@@ -16,7 +16,7 @@ public:
         IDLE, FIDGET, WALKING, STRAFING, ROLLING, LIFTING, DROPPING
     };
 
-    void setHoldables(std::vector<Sprite *> *holdables);
+    void setHoldables(std::vector<std::pair<Sprite *, int>> *holdables);
 
     void setMovementSpeed(int pixels);
 
@@ -33,7 +33,7 @@ private:
     bool canMove{true};
     bool canTurn{true};
     Sprite *heldSprite{nullptr};
-    std::vector<Sprite *> *holdablesWithinRange{nullptr};
+    std::vector<std::pair<Sprite *, int>> *holdablesWithinRange{nullptr};
 
     void move(drc::InputData::ButtonMask direction);
     // TODO list of collision objects

@@ -11,6 +11,7 @@
 
 #include "okayu.c"
 #include "module.c"
+#include "jack.c"
 #include "okayu.h"
 #include "GamepadScreen.h"
 #include "GamepadInput.h"
@@ -61,6 +62,12 @@ int main(int, char **) {
         module_pp_data[i] = const_cast<uint32_t *>(module_data[i]);
     }
 
+    uint32_t **jack_pp_data;
+    jack_pp_data = new uint32_t *[JACK_FRAME_WIDTH * JACK_FRAME_HEIGHT];
+    for (int i = 0; i < JACK_FRAME_COUNT; i++) {
+        jack_pp_data[i] = const_cast<uint32_t *>(jack_data[i]);
+    }
+
 
     auto input = new GamepadInput(streamer);
 
@@ -68,9 +75,16 @@ int main(int, char **) {
     okayu.frameDelay = 2;
 
     Sprite module(module_pp_data, MODULE_FRAME_WIDTH, MODULE_FRAME_HEIGHT, 100, 100, 2);
+    module.setFrame(2);
+    module.setGripPoint(14, 31);
 
-    vector<Sprite *> holdables = {&module};
+    Sprite jack(jack_pp_data, JACK_FRAME_WIDTH, JACK_FRAME_HEIGHT, 200, 200, 2);
+    jack.setGripPoint(30, 20);
+
+    vector<pair<Sprite *, int>> holdables = {{&module, 0},
+                                             {&jack,   0}};
     okayu.setHoldables(&holdables);
+    okayu.setGripPoint(15, 11);
 
     cout << "making okayu\n";
 
@@ -90,23 +104,25 @@ int main(int, char **) {
     bool running = true;
     int frameNum = 0;
     while (running) {
-        // int random_pixel = (rand() % (854 * 480)) * 4;{
-        int random_pixel = -1;
-        /*
-        vector<drc::byte> pixels_to_send(854 * 480 * 4, 1);
-        for (int i = 0; i < 854 * 480 * 4; i++) {
-            pixels_to_send[i] = screen.getPixels()->at(i);
-        }*/
         input->updateStates();
+        for (auto &spritePair: holdables) {
+            spritePair.second = okayu.distForComp(spritePair.first);
+        }
+        std::sort(holdables.begin(), holdables.end(), [](pair<Sprite *, int> a, pair<Sprite *, int> b) {
+            return a.second < b.second;
+        });
         okayu.updatePosition();
 
         screen.wipe();
+        //TODO iterates through this like 3 times
+        for (auto spritePair: holdables) {
+            if (spritePair.first != okayu.getHeldSprite()) {
+                screen.draw(spritePair.first);
+            }
+        }
+        screen.draw(&okayu);
         if (okayu.getHeldSprite()) {
-            screen.draw(&okayu);
             screen.draw(okayu.getHeldSprite());
-        } else {
-            screen.draw(&module);
-            screen.draw(&okayu);
         }
 
         // drawRadialSelector(&screen, 854 / 2, 480 / 2, 200, 5, 0xFF0000FF);
