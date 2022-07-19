@@ -11,10 +11,10 @@
 
 #include "images/okayu.c"
 #include "images/module.c"
-#include "images/jack.c"
 #include "images/okayu.h"
 
 #include "sprite_types/Character.h"
+#include "sprite_types/Cable.h"
 
 #include "GamepadScreen.h"
 #include "GamepadInput.h"
@@ -64,27 +64,25 @@ int main(int, char **) {
         module_pp_data[i] = const_cast<uint32_t *>(module_data[i]);
     }
 
-    uint32_t **jack_pp_data;
-    jack_pp_data = new uint32_t *[JACK_FRAME_WIDTH * JACK_FRAME_HEIGHT];
-    for (int i = 0; i < JACK_FRAME_COUNT; i++) {
-        jack_pp_data[i] = const_cast<uint32_t *>(jack_data[i]);
-    }
-
 
     auto input = new GamepadInput(streamer);
 
     Character okayu(okayu_pp_data, OKAYU_FRAME_WIDTH, OKAYU_FRAME_HEIGHT, input, 0, 0, 3);
     okayu.frameDelay = 2;
+    okayu.z = 50;
+    vector<Drawable *> spritesToDraw = {&okayu};
 
     Sprite module(module_pp_data, MODULE_FRAME_WIDTH, MODULE_FRAME_HEIGHT, 100, 100, 2);
     module.setFrame(2);
     module.setGripPoint(14, 31);
+    module.addChildren(&spritesToDraw);
 
-    Sprite jack(jack_pp_data, JACK_FRAME_WIDTH, JACK_FRAME_HEIGHT, 200, 200, 2);
-    jack.setGripPoint(30, 20);
+    auto *cable = new Cable();
+    cable->addChildren(&spritesToDraw);
 
-    vector<pair<Sprite *, int>> holdables = {{&module, 0},
-                                             {&jack,   0}};
+    vector<pair<Sprite *, int>> holdables = {{&module,          0},
+                                             {cable->rightPlug, 0},
+                                             {cable->leftPlug,  0}};
     okayu.setHoldables(&holdables);
     okayu.setGripPoint(15, 11);
 
@@ -102,38 +100,43 @@ int main(int, char **) {
 
     cout << "done drawing line. drawing circle\n";
 
+    cout << "drawables len: " << spritesToDraw.size() << endl;
+
     // main loop
     bool running = true;
-    int frameNum = 0;
     while (running) {
+        // get inputs
         input->updateStates();
+
+        // update holdables distance from okayu
         for (auto &spritePair: holdables) {
             spritePair.second = okayu.distForComp(spritePair.first);
         }
+
+        // sort holdables by distance to okayu
         std::sort(holdables.begin(), holdables.end(), [](pair<Sprite *, int> a, pair<Sprite *, int> b) {
             return a.second < b.second;
         });
         okayu.updatePosition();
 
+        // sort drawables by z pos
+        std::sort(spritesToDraw.begin(), spritesToDraw.end(), [](Drawable *drawable1, Drawable *drawable2) {
+            // todo if on same z, compare effective y positions (bc of perspective)
+            return drawable1->z < drawable2->z;
+        });
+
+        // clear screen
         screen.wipe();
-        //TODO iterates through this like 3 times
-        for (auto spritePair: holdables) {
-            if (spritePair.first != okayu.getHeldSprite()) {
-                spritePair.first->draw(&screen);
-            }
-        }
-        okayu.draw(&screen);
-        if (okayu.getHeldSprite()) {
-            okayu.getHeldSprite()->draw(&screen);
+        // draw sprites in z order
+        for (auto drawable: spritesToDraw) {
+            drawable->draw(&screen);
         }
 
         // drawRadialSelector(&screen, 854 / 2, 480 / 2, 200, 5, 0xFF0000FF);
 
-        //cout << "Pixels: " << pixels.size() << ", random_pixel: " << random_pixel << "\n";
         streamer->PushVidFrame(screen.getPixels(), 854, 480, drc::PixelFormat::kRGBA,
                                drc::Streamer::FlippingMode::NoFlip,
                                drc::Streamer::StretchMode::NoStretch);
-        frameNum = (frameNum + 1) % 2;
     }
 
 

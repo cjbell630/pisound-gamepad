@@ -10,6 +10,7 @@ void Character::updatePosition() {
         int lastFrame = (movementState == LIFTING ? Okayu_liftStart(prevDirectionThingy) + Okayu_liftFrames :
                          Okayu_dropStart(prevDirectionThingy) + Okayu_dropFrames) - 1;
         if (getFrame() == lastFrame) { // if on last anim frame
+            heldSprite->z = movementState == LIFTING ? z + 1 : heldSprite->z;
             heldSprite = movementState == DROPPING ? nullptr : heldSprite;
             setFrame(Okayu_idleStart(prevDirectionThingy, heldSprite));
             movementState = IDLE;
@@ -51,6 +52,7 @@ void Character::updatePosition() {
     } else if (gamepadInput->getState(drc::InputData::ButtonMask::kBtnA) == GamepadInput::ButtonState::DOWN) {
         if (heldSprite) { // if holding something
             movementState = DROPPING;
+            heldSprite->z = z - 1;
             setFrame(Okayu_dropStart(prevDirectionThingy));
         } else if (!holdablesWithinRange->empty()) { // if not holding and there is an object that can be picked up
             heldSprite = holdablesWithinRange->front().first; // pick up first object

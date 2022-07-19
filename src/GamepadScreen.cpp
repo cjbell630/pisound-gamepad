@@ -1,6 +1,7 @@
 #include <cmath>
 #include "GamepadScreen.h"
 #include <cstdarg>
+#include <iostream>
 
 int GamepadScreen::screenIndex(int spriteIndex, int spriteWidth, int xOff, int yOff) const {
     return screenWidth * (yOff + floor(spriteIndex / spriteWidth)) + (spriteIndex % spriteWidth) + xOff;

@@ -7,6 +7,11 @@
 class Drawable {
 public:
     virtual void draw(GamepadScreen *screen) = 0;
+
+    virtual void addChildren(std::vector<Drawable *> *children)  {
+        children->push_back(this);
+    }
+    int z{0};
 };
 
 
